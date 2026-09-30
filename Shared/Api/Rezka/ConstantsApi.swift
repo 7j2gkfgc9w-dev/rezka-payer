@@ -8,8 +8,8 @@
 import Foundation
 
 enum ConstantsApi {
-    static let scheme = "https://"
-    static let server = scheme + "rezka.fi"
+    static let scheme = "http://"
+    static let server = scheme + "192.168.1.2:8099"
     static let domain = "RezkaAPI"
     static let iCloudKey = ""
 }

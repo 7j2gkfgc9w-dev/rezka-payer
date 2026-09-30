@@ -75,7 +75,7 @@ struct NavigationRezkaApi {
     
     private func request(for url: URL) -> URLRequest {
         var request = URLRequest(url: url)
-        request.httpMethod = ApiConstants.HttpMethod.post.rawValue
+        request.httpMethod = ApiConstants.HttpMethod.get.rawValue
         request.setValue(ApiConstants.userAgent, forHTTPHeaderField: ApiConstants.userAgentKey)
         request.addValue(ApiConstants.defaultContentType, forHTTPHeaderField: ApiConstants.contentTypeKey)
         return request
