@@ -7,5 +7,13 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>CFBundleDisplayName</key>
+	<string>Rezka GW 1.1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.1</string>
+	<key>CFBundleVersion</key>
+	<string>2</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Rezka GW connects to the local HDRezka gateway on your home network.</string>
 </dict>
 </plist>
