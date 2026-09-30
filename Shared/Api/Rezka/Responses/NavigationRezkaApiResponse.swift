@@ -65,7 +65,23 @@ struct NavigationRezkaApiResponse: Decodable {
             categories.append(categoryList)
         })
         
-        categories = categories.dropLast(2)
+        guard categories.count >= 3 else {
+            throw NSError(
+                domain: "NavigationRezkaApiResponse",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Navigation structure not found"]
+            )
+        }
+
+        categories = Array(categories.dropLast(2))
+        guard !categories.isEmpty else {
+            throw NSError(
+                domain: "NavigationRezkaApiResponse",
+                code: 2,
+                userInfo: [NSLocalizedDescriptionKey: "Navigation categories are empty after filtering"]
+            )
+        }
+
         let element = categories.remove(at: categories.count - 1)
         categories.insert(element, at: 0)
         

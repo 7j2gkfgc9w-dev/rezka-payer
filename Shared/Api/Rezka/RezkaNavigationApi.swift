@@ -18,23 +18,54 @@ struct NavigationRezkaApi {
     private func fetchNavigation(from url: URL) async throws -> [CategoryList] {
         let request = request(for: url)
         
-        let (data, response) = try await session.data(for: request)
-        
-        guard let response = response as? HTTPURLResponse else {
+        let data: Data
+        let urlResponse: URLResponse
+        do {
+            (data, urlResponse) = try await session.data(for: request)
+        } catch {
+            let ns = error as NSError
+            let failingURL = (ns.userInfo[NSURLErrorFailingURLErrorKey] as? URL)?.absoluteString
+                ?? (ns.userInfo[NSURLErrorFailingURLStringErrorKey] as? String)
+                ?? url.absoluteString
+            throw NSError(
+                domain: "RezkaNetwork",
+                code: ns.code,
+                userInfo: [NSLocalizedDescriptionKey: "NET \(ns.domain) \(ns.code)\n\(failingURL)\n\(ns.localizedDescription)"]
+            )
+        }
+
+        guard let response = urlResponse as? HTTPURLResponse else {
             throw DataError.generate(for: .navigationRezkaApi, error: .bad)
         }
-        
-        switch response.statusCode {
-            
-        case (200...299), (400...499):
-            let html = String(decoding: data, as: UTF8.self)
-            guard !html.isEmpty else {
-                throw DataError.generate(for: .navigationRezkaApi, error: .empty)
+
+        let html = String(decoding: data, as: UTF8.self)
+        let title = html.range(of: "<title>", options: .caseInsensitive).flatMap { start in
+            html.range(of: "</title>", options: .caseInsensitive, range: start.upperBound..<html.endIndex).map { end in
+                String(html[start.upperBound..<end.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
             }
-            
-            return try NavigationRezkaApiResponse(from: html).categories
-        default:
-            throw DataError.generate(for: .navigationRezkaApi, error: .server)
+        } ?? "(no title)"
+
+        guard (200...299).contains(response.statusCode) else {
+            throw NSError(
+                domain: "RezkaHTTP",
+                code: response.statusCode,
+                userInfo: [NSLocalizedDescriptionKey: "HTTP \(response.statusCode)\n\(url.absoluteString)\nTitle: \(title)"]
+            )
+        }
+
+        guard !html.isEmpty else {
+            throw DataError.generate(for: .navigationRezkaApi, error: .empty)
+        }
+
+        do {
+            let categories = try NavigationRezkaApiResponse(from: html).categories
+            guard !categories.isEmpty else {
+                throw NSError(domain: "RezkaParser", code: 1, userInfo: [NSLocalizedDescriptionKey: "PARSER EMPTY\n\(url.absoluteString)\nTitle: \(title)"])
+            }
+            return categories
+        } catch {
+            let ns = error as NSError
+            throw NSError(domain: "RezkaParser", code: ns.code, userInfo: [NSLocalizedDescriptionKey: "PARSER \(ns.localizedDescription)\n\(url.absoluteString)\nTitle: \(title)"])
         }
     }
     
