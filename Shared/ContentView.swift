@@ -48,6 +48,16 @@ struct ContentView: View {
             .onChange(of: horizontalSizeClass) { _, newValue in
                 print("debug ContentView onChange \(String(describing: horizontalSizeClass)) -> \(String(describing: newValue))")
             }
+            .overlay(alignment: .topLeading) {
+                Text("GW 1.2")
+                    .font(.headline)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(.red)
+                    .foregroundStyle(.white)
+                    .cornerRadius(8)
+                    .padding(24)
+            }
             .overlay(overlayView)
             .onFirstAppear {
                 selectedCategory = viewModel.categories.first
