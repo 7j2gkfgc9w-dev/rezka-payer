@@ -1,34 +1,18 @@
-name: Build unsigned tvOS IPA
+name: Build tvOS IPA
 
 on:
   workflow_dispatch:
   push:
-    paths:
-      - '.github/workflows/build-tvos.yml'
-      - 'Shared/**'
-      - 'tvOS/**'
-      - 'rezka-player.xcodeproj/**'
-      - 'rezka-player-Info.plist'
+    branches: [ main, master ]
 
 jobs:
   build:
-    runs-on: macos-15
-    timeout-minutes: 30
-
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show Xcode version
-        run: xcodebuild -version
-
-      - name: Resolve Swift packages
-        run: |
-          xcodebuild -resolvePackageDependencies \
-            -project rezka-player.xcodeproj \
-            -scheme rezka-player
-
-      - name: Build tvOS app unsigned
+      - name: Build unsigned tvOS app
         run: |
           set -euxo pipefail
           xcodebuild \
@@ -39,24 +23,22 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/DerivedData" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY='' \
+            CODE_SIGN_IDENTITY="" \
             build
 
-      - name: Package unsigned IPA
+      - name: Package IPA
         run: |
           set -euxo pipefail
-          APP=$(find "$RUNNER_TEMP/DerivedData/Build/Products/Release-appletvos" -maxdepth 1 -name '*.app' -print -quit)
+          APP=$(find "$RUNNER_TEMP/DerivedData/Build/Products/Release-appletvos" -maxdepth 1 -type d -name '*.app' -print -quit)
           test -n "$APP"
-          mkdir -p "$RUNNER_TEMP/ipa/Payload"
-          cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
-          cd "$RUNNER_TEMP/ipa"
-          /usr/bin/zip -qry "$RUNNER_TEMP/rezka-player-tvOS-unsigned.ipa" Payload
-          unzip -l "$RUNNER_TEMP/rezka-player-tvOS-unsigned.ipa" | head
+          mkdir -p Payload artifact
+          cp -R "$APP" Payload/
+          ditto -c -k --sequesterRsrc --keepParent Payload artifact/rezka-player-tvOS-unsigned.ipa
+          unzip -l artifact/rezka-player-tvOS-unsigned.ipa | head -40
 
-      - name: Upload IPA artifact
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: rezka-player-tvOS-unsigned
-          path: ${{ runner.temp }}/rezka-player-tvOS-unsigned.ipa
+          path: artifact/rezka-player-tvOS-unsigned.ipa
           if-no-files-found: error
-          retention-days: 7
