@@ -1,0 +1,62 @@
+name: Build unsigned tvOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build-tvos.yml'
+      - 'Shared/**'
+      - 'tvOS/**'
+      - 'rezka-player.xcodeproj/**'
+      - 'rezka-player-Info.plist'
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project rezka-player.xcodeproj \
+            -scheme rezka-player
+
+      - name: Build tvOS app unsigned
+        run: |
+          set -euxo pipefail
+          xcodebuild \
+            -project rezka-player.xcodeproj \
+            -scheme rezka-player \
+            -configuration Release \
+            -sdk appletvos \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY='' \
+            build
+
+      - name: Package unsigned IPA
+        run: |
+          set -euxo pipefail
+          APP=$(find "$RUNNER_TEMP/DerivedData/Build/Products/Release-appletvos" -maxdepth 1 -name '*.app' -print -quit)
+          test -n "$APP"
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
+          cd "$RUNNER_TEMP/ipa"
+          /usr/bin/zip -qry "$RUNNER_TEMP/rezka-player-tvOS-unsigned.ipa" Payload
+          unzip -l "$RUNNER_TEMP/rezka-player-tvOS-unsigned.ipa" | head
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rezka-player-tvOS-unsigned
+          path: ${{ runner.temp }}/rezka-player-tvOS-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7
