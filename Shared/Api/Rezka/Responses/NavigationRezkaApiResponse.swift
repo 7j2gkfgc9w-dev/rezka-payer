@@ -58,7 +58,9 @@ struct NavigationRezkaApiResponse: Decodable {
             })
             
             let type = Category(rawValue: typeString.letters) ?? .none
-            assert(type != .none, "new category: \(typeString)")
+            guard type != .none else {
+                return
+            }
             
             let categoryList = CategoryList(type: type, items: subCategories, name: title, iconName: "")
             

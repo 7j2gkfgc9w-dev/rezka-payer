@@ -15,7 +15,7 @@ final class ContentViewModel: ObservableObject {
     
     private let api = NavigationRezkaApi()
     
-    private let cache: DiskCache<[CategoryList]> = .init(filename: "navigationcache", expirationInterval: 5 * 60)
+    private let cache: DiskCache<[CategoryList]> = .init(filename: "navigationcache-gw14", expirationInterval: 5 * 60)
     
     var categories: [CategoryList] {
         phase.value ?? []
@@ -26,7 +26,8 @@ final class ContentViewModel: ObservableObject {
         
         try? await cache.loadFromDisk()
         
-        if let categories = await cache.value(forKey: "categories_list") {
+        if let categories = await cache.value(forKey: "categories_list"),
+           !categories.contains(where: { $0.type == .none }) {
             phase = .success(categories)
         }
         

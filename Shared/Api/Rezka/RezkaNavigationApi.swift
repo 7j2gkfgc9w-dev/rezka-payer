@@ -30,7 +30,7 @@ struct NavigationRezkaApi {
             throw NSError(
                 domain: "RezkaNetwork",
                 code: ns.code,
-                userInfo: [NSLocalizedDescriptionKey: "GW 1.3\nNET \(ns.domain) \(ns.code)\n\(failingURL)\n\(ns.localizedDescription)"]
+                userInfo: [NSLocalizedDescriptionKey: "GW 1.4\nNET \(ns.domain) \(ns.code)\n\(failingURL)\n\(ns.localizedDescription)"]
             )
         }
 
@@ -49,7 +49,7 @@ struct NavigationRezkaApi {
             throw NSError(
                 domain: "RezkaHTTP",
                 code: response.statusCode,
-                userInfo: [NSLocalizedDescriptionKey: "GW 1.3\nHTTP \(response.statusCode)\n\(url.absoluteString)\nTitle: \(title)"]
+                userInfo: [NSLocalizedDescriptionKey: "GW 1.4\nHTTP \(response.statusCode)\n\(url.absoluteString)\nTitle: \(title)"]
             )
         }
 
@@ -60,12 +60,12 @@ struct NavigationRezkaApi {
         do {
             let categories = try NavigationRezkaApiResponse(from: html).categories
             guard !categories.isEmpty else {
-                throw NSError(domain: "RezkaParser", code: 1, userInfo: [NSLocalizedDescriptionKey: "GW 1.3\nPARSER EMPTY\n\(url.absoluteString)\nTitle: \(title)"])
+                throw NSError(domain: "RezkaParser", code: 1, userInfo: [NSLocalizedDescriptionKey: "GW 1.4\nPARSER EMPTY\n\(url.absoluteString)\nTitle: \(title)"])
             }
             return categories
         } catch {
             let ns = error as NSError
-            throw NSError(domain: "RezkaParser", code: ns.code, userInfo: [NSLocalizedDescriptionKey: "GW 1.3\nPARSER \(ns.localizedDescription)\n\(url.absoluteString)\nTitle: \(title)"])
+            throw NSError(domain: "RezkaParser", code: ns.code, userInfo: [NSLocalizedDescriptionKey: "GW 1.4\nPARSER \(ns.localizedDescription)\n\(url.absoluteString)\nTitle: \(title)"])
         }
     }
     
