@@ -11,7 +11,7 @@ import Foundation
 enum AppDiag {
     static func mark(_ event: String) {
         guard let encoded = event.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "http://192.168.1.2:8099/__appdiag?build=5&event=\(encoded)") else { return }
+              let url = URL(string: "http://192.168.1.2:8100/__appdiag?build=5&event=\(encoded)") else { return }
         var request = URLRequest(url: url)
         request.timeoutInterval = 1.5
         URLSession.shared.dataTask(with: request).resume()
@@ -19,7 +19,7 @@ enum AppDiag {
 
     static func markAwait(_ event: String) async {
         guard let encoded = event.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let url = URL(string: "http://192.168.1.2:8099/__appdiag?build=5&event=\(encoded)") else { return }
+              let url = URL(string: "http://192.168.1.2:8100/__appdiag?build=5&event=\(encoded)") else { return }
         var request = URLRequest(url: url)
         request.timeoutInterval = 1.5
         _ = try? await URLSession.shared.data(for: request)
