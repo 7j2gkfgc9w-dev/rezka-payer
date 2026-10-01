@@ -29,6 +29,7 @@ final class MediaContentViewModel: ObservableObject {
     }
     
     init(category: Category = .general, subCategories: [SubCategoryList]? = nil) {
+        AppDiag.mark("MEDIA_VM_INIT_\(category.rawValue)")
         self.category = category
         self.subCategories = subCategories
         self.selectedSubCategory = subCategories?.first

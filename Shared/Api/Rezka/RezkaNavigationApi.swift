@@ -16,12 +16,14 @@ struct NavigationRezkaApi {
     }
     
     private func fetchNavigation(from url: URL) async throws -> [CategoryList] {
+        await AppDiag.markAwait("HTTP_BEGIN")
         let request = request(for: url)
         
         let data: Data
         let urlResponse: URLResponse
         do {
             (data, urlResponse) = try await session.data(for: request)
+            await AppDiag.markAwait("HTTP_DATA_OK")
         } catch {
             let ns = error as NSError
             let failingURL = (ns.userInfo[NSURLErrorFailingURLErrorKey] as? URL)?.absoluteString
@@ -30,7 +32,7 @@ struct NavigationRezkaApi {
             throw NSError(
                 domain: "RezkaNetwork",
                 code: ns.code,
-                userInfo: [NSLocalizedDescriptionKey: "GW 1.4\nNET \(ns.domain) \(ns.code)\n\(failingURL)\n\(ns.localizedDescription)"]
+                userInfo: [NSLocalizedDescriptionKey: "B5\nNET \(ns.domain) \(ns.code)\n\(failingURL)\n\(ns.localizedDescription)"]
             )
         }
 
@@ -49,7 +51,7 @@ struct NavigationRezkaApi {
             throw NSError(
                 domain: "RezkaHTTP",
                 code: response.statusCode,
-                userInfo: [NSLocalizedDescriptionKey: "GW 1.4\nHTTP \(response.statusCode)\n\(url.absoluteString)\nTitle: \(title)"]
+                userInfo: [NSLocalizedDescriptionKey: "B5\nHTTP \(response.statusCode)\n\(url.absoluteString)\nTitle: \(title)"]
             )
         }
 
@@ -58,14 +60,16 @@ struct NavigationRezkaApi {
         }
 
         do {
+            await AppDiag.markAwait("PARSE_BEGIN")
             let categories = try NavigationRezkaApiResponse(from: html).categories
+            await AppDiag.markAwait("PARSE_OK_\(categories.count)")
             guard !categories.isEmpty else {
-                throw NSError(domain: "RezkaParser", code: 1, userInfo: [NSLocalizedDescriptionKey: "GW 1.4\nPARSER EMPTY\n\(url.absoluteString)\nTitle: \(title)"])
+                throw NSError(domain: "RezkaParser", code: 1, userInfo: [NSLocalizedDescriptionKey: "B5\nPARSER EMPTY\n\(url.absoluteString)\nTitle: \(title)"])
             }
             return categories
         } catch {
             let ns = error as NSError
-            throw NSError(domain: "RezkaParser", code: ns.code, userInfo: [NSLocalizedDescriptionKey: "GW 1.4\nPARSER \(ns.localizedDescription)\n\(url.absoluteString)\nTitle: \(title)"])
+            throw NSError(domain: "RezkaParser", code: ns.code, userInfo: [NSLocalizedDescriptionKey: "B5\nPARSER \(ns.localizedDescription)\n\(url.absoluteString)\nTitle: \(title)"])
         }
     }
     

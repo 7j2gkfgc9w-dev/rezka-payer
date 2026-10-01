@@ -50,6 +50,7 @@ struct ContentView: View {
             }
             .overlay(overlayView)
             .onFirstAppear {
+                AppDiag.mark("FIRST_APPEAR")
                 selectedCategory = viewModel.categories.first
                 refreshTask()
                 
